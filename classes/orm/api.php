@@ -5,14 +5,19 @@ defined('SYSPATH') or die('No direct script access.');
 /**
  * Interface implemented by models which are supported through api.
  * 
- * @package orm-api
+ * @package Api
  * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
  * @copyright (c) 2013, Hète.ca Inc.
  */
 interface ORM_Api {
 
     /**
-     * List of expected columns to be filled by the api.
+     * List of visible columns.
+     */
+    public function api_columns();
+
+    /**
+     * List of expected columns.
      */
     public function api_expected();
 
