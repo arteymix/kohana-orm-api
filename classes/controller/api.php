@@ -41,31 +41,36 @@ defined('SYSPATH') or die('No direct script access.');
  */
 class Controller_Api extends Controller {
 
+    public static $methods = array(
+        Request::GET => "find",
+        Request::POST => "update",
+        Request::PUT => "create",
+        Request::DELETE => "delete"
+    );
+
     /**
      * Model to work on.
      * 
      * @var ORM
      */
     protected $model;
-
-    /**
-     *
-     * @var variant 
-     */
-    protected $body;
-
-    public function action_index() {
-
+    
+    public function before() {
         $model = $this->request->param('model');
-        $singular = Inflector::singular($model) === $model;
-
-        if (!class_exists('Model_' . ucfirst(Inflector::singular($model)))) {
-            throw new HTTP_Exception_404('Model :model not found.', array(':model' => Inflector::singular($model)));
-        }
-
+        
         $this->model = ORM::factory(Inflector::singular($model));
 
         if (!$this->model instanceof ORM_Api) {
+            throw new HTTP_Exception_404('Model :model not found.', array(':model' => Inflector::singular($model)));
+        }
+    }
+
+    public function action_index() {
+        $model = $this->request->param('model');
+    
+        $singular = Inflector::singular($this->request->param('model')) === $model;
+
+        if (!class_exists('Model_' . ucfirst(Inflector::singular($model)))) {
             throw new HTTP_Exception_404('Model :model not found.', array(':model' => Inflector::singular($model)));
         }
 
@@ -73,6 +78,10 @@ class Controller_Api extends Controller {
 
         if ($columns === NULL) {
             $columns = array_keys($this->model->table_columns());
+        }
+        
+        if(($id = $this->request->param('id')) !== NULL) {
+           $this->model->where($this->model->primary_key(), '=', $id); 
         }
 
         foreach ($this->request->query() as $column => $criteria) {
@@ -86,51 +95,89 @@ class Controller_Api extends Controller {
                 }
             }
         }
-
-        // Pluralize method with _all
-        $method = $singular ? $this->request->param('method') : $this->request->param('method') . '_all';
-
-        $validation = Validation::factory($this->request->param())
+        
+        $method = Controller_Api::$methods[$this->request->method()] . ($singular ? '' : '_all');
+        
+        $validation = Validation::factory(array('method' => $method))
                 ->rule('method', 'in_array', array($method, $this->model->api_methods()));
 
         if (!$validation->check($validation)) {
-            throw new Validation_Exception($validation);
+            throw new HTTP_Exception_404('Model :model not found.', array(':model' => Inflector::singular($model)));
         }
-
+        
         try {
-            switch ($method) {
-                case 'update':
-                case 'save':
-                    // All these calls require a loaded model
-                    $this->model->find();
-                default:
-
-                    $result = NULL;
-
-                    if ($singular) {
-
-                        // Make the api call
-                        $_result = $this->model->{$method}()->as_array();
-
-                        // Filter result columns
-                        foreach ($columns as $column) {
-                            $result[$column] = $_result[$column];
-                        }
-                    } else {
-                        // Make the api call
-                        $result = $this->model->{$method}()->as_array(NULL, $this->model->primary_key());
-                    }
-
-                    $this->response
-                            ->headers('Content-Type', 'application/json')
-                            ->body(json_encode($result, JSON_UNESCAPED_UNICODE));
+        
+            $result = array();
+            
+            if(in_array($method, array('update', 'delete'))) {
+                $this->model->find();
             }
+
+            if ($singular) {
+
+                if(in_array($method, array('update', 'create'))) {
+                    if($method == 'update') {
+                        $values = $this->request->post();
+                    }
+                    else if($method == 'create') {
+                        parse_str($this->request->body(), $values);
+                    }
+                    
+                    foreach($values as $column => $value) {
+                        if(in_array($column, $columns)) {
+                            $this->model->{$column} = $value;
+                        }
+                    }
+                }
+                
+                // Make the api call
+                $_result = $this->model->{$method}()->as_array();
+                
+                // Filter result columns
+                foreach ($columns as $column) {
+                    $result[$column] = $_result[$column];
+                }
+            
+            } else {
+                // Make the api call
+                
+                foreach($this->model->{$method}() as $index => $model) {
+                
+                    $_result = $model->as_array();
+                    
+                    // Filter result columns
+                    foreach ($columns as $column) {
+                        $result[$index][$column] = $_result[$column];
+                    }
+                    
+                }
+                
+            }
+
+            $this->response
+                    ->headers('Content-Type', 'application/json; charset=utf-8')
+                    ->body(json_encode($result, JSON_UNESCAPED_UNICODE));
+    
         } catch (ORM_Validation_Exception $ove) {
             $this->response
-                    ->headers('Content-Type', 'application/json')
+                    ->headers('Content-Type', 'application/json; charset=utf-8')
                     ->body(json_encode($ove->errors('model'), JSON_UNESCAPED_UNICODE))
                     ->status(401);
         }
+    }
+    
+    public function action_count() {
+        $model = Inflector::singular($this->request->param('model'));
+    
+        if(!in_array("count_all", $this->model->api_methods())){
+            throw new HTTP_Exception_404('Model :model not found.', array(':model' => $model));
+        }
+        
+        $result = array('count' => $this->model->count_all());
+        
+        $this->response
+                    ->headers('Content-Type', 'application/json; charset=utf-8')
+                    ->body(json_encode($result, JSON_UNESCAPED_UNICODE));
     }
 
 }
