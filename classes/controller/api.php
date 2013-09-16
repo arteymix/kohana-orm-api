@@ -65,14 +65,14 @@ class Controller_Api extends Controller {
 
         $this->model = ORM::factory(Inflector::singular($model));
 
+        if (!$this->model instanceof ORM_Api) {
+            throw new HTTP_Exception_404('Model :model not found.', array(':model' => Inflector::singular($model)));
+        }
+
         $columns = $this->model->api_columns();
 
         if ($columns === NULL) {
             $columns = array_keys($this->model->table_columns());
-        }
-
-        if (!$this->model instanceof ORM_Api) {
-            throw new HTTP_Exception_404('Model :model not found.', array(':model' => Inflector::singular($model)));
         }
 
         foreach ($this->request->query() as $column => $criteria) {
