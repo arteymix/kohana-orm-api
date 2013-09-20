@@ -80,7 +80,6 @@ Note : since doing cross-browser compatible AJAX is an horrible task to do and s
 All complaints about that fact should be sent directly to /dev/null.
 
 
-
 ## Security
 
 As the GNU licences say so well :
@@ -89,7 +88,11 @@ As the GNU licences say so well :
 > but WITHOUT ANY WARRANTY; without even the implied warranty of
 > MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-In a few words, we believe that this module is safe to use (when correctly configured), due to the simplicity of it's code, but be aware that we are humans and mistakes can always happen.
+In a few words, we believe that this module is safe to use (when correctly configured), due to the simplicity of it's code, but be aware that we are humans and mistakes can always happen. Still, since this is a free project, you can always double-check the code yourself (or pay a developer to do it).
+
+## License
+
+Not decided yet. Comming soon :)
 
 ## In Conclusion
 
