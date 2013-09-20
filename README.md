@@ -51,6 +51,18 @@ This method defines what ORM methods can be accessed through the API. The follow
 3.  `update()`
 4.  `create()`
 5.  `delete()`
+6.  `count_all()`
+
+You could, for instance, allow a `Model_User` to be fetched one-by-one or in batch by using the following code :
+
+    public function api_columns() {
+        return array(
+            'find',
+            'find_all',
+        );
+    }
+
+Of course, only the columns specified in `api_columns()` will be included in the fetched models.
 
 ### Routes
 
