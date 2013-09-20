@@ -71,13 +71,13 @@ All complaints about that fact should be sent directly to /dev/null.
 
 ## Security
 
-    As the GNU licences say so well :
+As the GNU licences say so well :
 
 > This software is distributed in the hope that it will be useful,
 > but WITHOUT ANY WARRANTY; without even the implied warranty of
 > MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-    In a few words, we believe that this module is safe to use (when correctly configured), due to the simplicity of it's code, but be aware that we are humans and mistakes can always happen.
+In a few words, we believe that this module is safe to use (when correctly configured), due to the simplicity of it's code, but be aware that we are humans and mistakes can always happen.
 
 ## In Conclusion
 
