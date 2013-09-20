@@ -36,7 +36,7 @@ defined('SYSPATH') or die('No direct script access.');
  * 
  * @package Api
  * @category Controller
- * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
+ * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>, Nicolas Hurtubise <316k@legtux.org>
  * @copyright (c) 2013, Hète.ca Inc.
  */
 class Controller_Api extends Controller {
