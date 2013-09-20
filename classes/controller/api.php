@@ -43,8 +43,8 @@ class Controller_Api extends Controller {
 
     public static $methods = array(
         Request::GET => "find",
-        Request::PUT => "update",
         Request::POST => "create",
+        Request::PUT => "update",
         Request::DELETE => "delete"
     );
 
