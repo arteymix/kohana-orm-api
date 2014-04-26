@@ -58,7 +58,7 @@ class Controller_Api extends Controller {
     public function before() {
         $model = $this->request->param('model');
         
-        $this->model = ORM::factory(Inflector::singular($model));
+        $this->model = ORM::factory(ucfirst(Inflector::singular($model)));
 
         if (!$this->model instanceof ORM_Api) {
             throw new HTTP_Exception_404('Model :model not found.', array(':model' => Inflector::singular($model)));
@@ -102,7 +102,7 @@ class Controller_Api extends Controller {
                 ->rule('method', 'in_array', array($method, $this->model->api_methods()));
 
         if (!$validation->check($validation)) {
-            throw new HTTP_Exception_404('Model :model not found.', array(':model' => Inflector::singular($model)));
+            throw new HTTP_Exception_404('Model :model not found.', array(':model' => ucfirst(Inflector::singular($model))));
         }
         
         try {
