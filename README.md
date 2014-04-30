@@ -47,7 +47,7 @@ The only configuration required is a policy file that defines what calls are aut
     return array(
         <model> => array(
             <method> => array(
-                'columns' => array(),  // columns exposed to manipulation (sorting, filtering, ...)
+                'exposed' => array(),  // columns exposed to manipulation (sorting, filtering, ...)
                 'expected' => array(), // columns exposed to modification
             )
         )
@@ -58,21 +58,23 @@ For example, if you want to expose registered usernames
     return array(
         'User' => array(
             'find' => array(
-                'columns' => array('username'),
+                'exposed' => array('username'),
             )
         )
     );
     
-Use an empty array to signify a complete negation and the NULL value to allow anything
+Use an empty array to signify a complete negation and the NULL value to allow anything.
 
     return array(
         'User' => array(
             'find' => array(
-                'columns' => array() // no columns exposed
+                'exposed' => array() // no columns exposed
                 'expected' => NULL   // any value can be modified
             )
         )
     );
+    
+If expected or exposed is not set, NULL will be defaulted.
     
 ## Usage/Examples
 
