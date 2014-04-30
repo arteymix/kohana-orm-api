@@ -2,76 +2,81 @@
 
 ## Synopsis
 
-This module allows kohana ORMs to be fetched and manipulated in javascript/AJAX.
+This module provides an api for fetching and manipulating ORM models over a [RESTful web API](https://en.wikipedia.org/wiki/REST#RESTful_web_APIs). The four HTTP methods GET, POST, PUT and DELETE are used (respectively) to Find, Create, Update and Delete ORM models.
 
-This is a [RESTful web API](https://en.wikipedia.org/wiki/REST#RESTful_web_APIs), where the four HTTP methods GET, POST, PUT and DELETE are used (respectively) to Find, Create, Update and Delete ORM models.
+## Routing
+
+Models are fetched following this syntax
+
+    api/<model>(/<id>(/<action>))
+    
+If <model> is plural, a list of models will be returned in the JSON-encoded response body. The suffix \_all will be appended to the called method. (eg. find => find\_all)
+
+As a default behiavior, the HTTP method is used to resolve the method to call on a model. Everything is therefore handled in the index action.
+
+    GET is mapped to find
+    PUT is mapped to create
+    POST is mapped to update
+    DELETE is mapped to delete
+
+<action> is used to perform other operations such as has, add or remove.
+
+Implemented actions are
+
+### count
+
+count will return a JSON-encoded integer.
+
+### has, add and remove
+
+A JSON object must be providen, containing
+
+    {
+        'alias': <alias>,
+        'far_keys': <far_keys>
+    }
+
+add and remove will return an empty body with a 200 status code on success.
+
+has will return a JSON-encoded boolean.
 
 ## Configuration
 
-### Configuring the models
+The only configuration required is a policy file that defines what calls are authorized on your models.
 
-Simply implement in your custom class the interface `ORM_Api`. This interface has 3 public methods returning arrays : 
+    return array(
+        <model> => array(
+            <method> => array(
+                'columns' => array(),  // columns exposed to manipulation (sorting, filtering, ...)
+                'expected' => array(), // columns exposed to modification
+            )
+        )
+    );
 
-1.  `api_columns()`
-2.  `api_expected()`
-3.  `api_methods()`
+For example, if you want to expose registered usernames
 
-#### `api_columns()`
+    return array(
+        'User' => array(
+            'find' => array(
+                'columns' => array('username'),
+            )
+        )
+    );
+    
+Use an empty array to signify a complete negation and the NULL value to allow anything
 
-This method defines the columns that can be accessed through the api for a model. You could, for instance, allow a `Model_User` class to reveal through the api the usernames and ages of your users, but not their primary keys, their password hash, or anything else by using the following code :
-
-    public function api_columns() {
-         return array(
-             'username',
-             'age',
-         );
-    }
-
-If all the columns in your model are completely public, you can use the following :
-
-    /**
-     * All columns are accessible through the API
-     */
-    public function api_columns() {
-        return NULL;
-    }
-
-If you want no column to be public, you should return an empty array.
-
-#### `api_expected()`
-
-This method defines what columns are expected when performing an update/create operation.
-
-#### `api_methods()`
-
-This method defines what ORM methods can be accessed through the API. The following methods are available :
-
-1.  `find()`
-2.  `find_all()`
-3.  `update()`
-4.  `create()`
-5.  `delete()`
-6.  `count_all()`
-
-You could, for instance, allow a `Model_User` to be fetched one-by-one or in batch by using the following code :
-
-    public function api_columns() {
-        return array(
-            'find',
-            'find_all',
-        );
-    }
-
-Of course, only the columns specified in `api_columns()` will be included in the fetched models.
-
-### Routes
-
-The default routes are defined in init.php, but can be overidden thanks to Kohana's cascading filesystem. The default values are :
-
-*   `api/<model>(/<id>)`
-*   `api/count/<model>` for the `->count_all()` helper
-
+    return array(
+        'User' => array(
+            'find' => array(
+                'columns' => array() // no columns exposed
+                'expected' => NULL   // any value can be modified
+            )
+        )
+    );
+    
 ## Usage/Examples
+
+jQuery is well suited for the job when it comes to api-based website. You can create a nice app using its ajax implementation.
 
 Note : since doing cross-browser compatible AJAX is an horrible task to do and since nobody does that anymore, we'll just assume in the following examples that you are using jQuery. It's a free (as in freedom) library that simplifies AJAX requests, along with every other thing raw javascript does and there is no excuse not to use it.
 
@@ -87,6 +92,8 @@ As the GNU licences say so well :
 > This software is distributed in the hope that it will be useful,
 > but WITHOUT ANY WARRANTY; without even the implied warranty of
 > MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+This is an api that exposes your model in a generic manner, so do not take security concers with a grain of salt.
 
 In a few words, we believe that this module is safe to use (when correctly configured), due to the simplicity of it's code, but be aware that we are humans and mistakes can always happen. Still, since this is a free project, you can always double-check the code yourself (or pay a developer to do it).
 
