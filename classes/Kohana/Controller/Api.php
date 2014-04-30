@@ -115,27 +115,19 @@ class Controller_Api extends Controller {
         // apply the query
         foreach ($this->request->query() as $function => $case) {
 
-            // the function must be exposed
-            if (!in_array($function, $this->policy->get('functions'))) {
+            // restrict the exposed functions
+            if (in_array($function, array(
+                'distinct',
+                'with',
+                'order_by', 'group_by', 
+                'limit', 'offset',
+                'where', 'and_where', 'or_where',
+                'having', 'and_having', 'or_having'))) {
 
-                throw HTTP_Exception_403(':model does not allow :function call through api.', array(
-                    ':model' => $model->object_name(),
-                    ':function' => $function
-                ));
-            }
+                foreach ($case as $arguments) {
 
-            foreach ($case as $arguments) {
-    
-                // the column must be exposed
-                if (!in_array(Arr::get($arguments, 0), $this->policy->get('columns'))) {
-
-                    throw HTTP_Exception_403(':model does not expose :column through api.', array(
-                        ':model' => $model->object_name(),
-                        ':column' => $column
-                    ));
+                    call_user_func_array(array($this->model, $function), $arguments);
                 }
-
-                call_user_func_array(array($this->model, $function), $arguments)
             }
         }
     }
@@ -159,12 +151,9 @@ class Controller_Api extends Controller {
                 
                 // Make the api call
                 $this->model->{$this->method}();
-                
-                // Filter result columns
-                foreach ($columns as $column) {
-
-                    $result[$column] = $this->model->{$column};
-                }
+                    
+                // filter result columns
+                $result = Arr::extract($this->model->as_array(), $this->policy->get('exposed'));
             
             } else {
 
@@ -224,7 +213,7 @@ class Controller_Api extends Controller {
 
         $validation = Validation::factory($add)
             ->rule('alias', 'not_empty')
-            ->rule('alias', 'in_array', array(':value', $this->policy->get('columns')));
+            ->rule('alias', 'in_array', array(':value', $this->policy->get('expected')));
 
         if (!$validation->check()) {
 
@@ -251,7 +240,7 @@ class Controller_Api extends Controller {
 
         $validation = Validation::factory($remove)
             ->rule('alias', 'not_empty')
-            ->rule('alias', 'in_array', array(':value', $this->policy->get('columns')));
+            ->rule('alias', 'in_array', array(':value', $this->policy->get('expected')));
 
         if (!$validation->check()) {
 
@@ -278,7 +267,7 @@ class Controller_Api extends Controller {
 
         $validation = Validation::factory($has)
             ->rule('alias', 'not_empty')
-            ->rule('alias', 'in_array', array(':value', $this->policy->get('columns')));
+            ->rule('alias', 'in_array', array(':value', $this->policy->get('expected')));
 
         if (!$validation->check()) {
 
@@ -288,5 +277,23 @@ class Controller_Api extends Controller {
         $this->response
             ->headers('Content-Type', 'application/json; charset=utf-8')    
             ->body(json_encode($this->model->has($has['alias'], Arr::get($has, 'far_keys')), JSON_UNESCAPED_UNICODE));
+    }
+    
+    /**
+     * Check if the given values checks for a model.
+     *
+     * If not, errors will be JSON-encoded and returned.
+     */
+    public function action_check() {
+
+        try {
+
+            $this->model->check();
+        } catch(ORM_Validation_Exception $ove) {
+            
+            $this->response
+                ->headers('Content-Type', 'application/json; charset-utf-8')
+                ->body(json_encode($ove->errors('model'), JSON_UNESCAPED_UNICODE));    
+        }
     }
 }

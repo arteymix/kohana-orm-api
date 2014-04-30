@@ -6,11 +6,10 @@
 return array(
     'User' => array(
         'find' => array(
-            'columns' => array(), // exposed columns in the query
-            'functions' => array('where', 'order_by') // exposed functions in the call
+            'exposed' => array(), // exposed columns in the query
         ),
         'update' => array(
-            'columns' => array(), // columns through which search can be done
+            'exposed' => array(), // columns through which search can be done
             'expected' => array() // columns updated following a POST request
         )
     )
