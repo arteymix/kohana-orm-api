@@ -40,6 +40,12 @@ add and remove will return an empty body with a 200 status code on success.
 
 has will return a JSON-encoded boolean.
 
+### check
+
+Use the request body to update values in the model and then check its validity.
+
+check will return an empty body with a 200 status code on success. JSON-encoded errors will be returned on failure.
+
 ## Configuration
 
 The only configuration required is a policy file that defines what calls are authorized on your models.
