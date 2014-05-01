@@ -3,13 +3,14 @@
 defined('SYSPATH') or die('No direct script access.');
 
 /**
- * Route for api
+ * Default route
  */
-Route::set('api', 'api/<model>(/<method>)', array(
-    'method' => 'create|update|save',
+Route::set('orm-api', 'api/<model>(/<action>)(/<id>)', array(
+    'id' => '.+',
+    'action' => 'count',
 ))->defaults(array(
     'controller' => 'api',
     'action' => 'index',
-    'method' => 'find'
 ));
+
 ?>
