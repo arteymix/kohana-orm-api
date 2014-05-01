@@ -1,0 +1,23 @@
+{
+        "name": "arteymix/orm-api",
+        "type": "kohana-module",
+        "description": "RESTful api that exposes ORM models",
+        "license": "BSD-3-Clause",
+        "authors": [
+            {
+                "name": "Guillaume Poirier-Morency",
+                "email": "guillaumepoiriermorency@gmail.com",
+                "role": "developer"    
+            },
+            {
+                "name": "Nicholas Hurtubise",
+                "email": "316k@legtux.org",
+                "role": "developer"    
+            }
+        ],
+	"require": {
+                "kohana/orm": ">=3.3",
+		"phpunit/phpunit": "3.7.24",
+		"phing/phing": "dev-master"
+	}
+}
