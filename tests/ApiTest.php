@@ -16,7 +16,7 @@ class Model_User extends Model_Auth_User {}
  * @package orm-api
  * @category Tests
  * @author Guillaume Poirier-Morency <guillaumepoiriermorency@gmail.com>
- * @license BSD 3-clauses
+ * @license BSD-3-Clauses
  */
 class ApiTest extends Unittest_TestCase {
 
@@ -25,16 +25,14 @@ class ApiTest extends Unittest_TestCase {
 	 */
 	public function getUser()
 	{
-		return ORM::factory('User')->values(
-			array(
-				'username' => 'test', 'email' => 'test@example.com', 'password' => 'abcd1234'
-			))
+		return ORM::factory('User')->values(array('username' => 'test', 
+			'email' => 'test@example.com', 'password' => 'abcd1234'))
 			->create();
 	}
 
 	public function testFind()
 	{
-		$model = $this->getModel();
+		$model = $this->getUser();
 		
 		$response = Request::factory('api/user/' . $model)->method(Request::GET)
 			->execute();
@@ -61,10 +59,9 @@ class ApiTest extends Unittest_TestCase {
 
 	public function testUpdate()
 	{
-		$model = $this->getModel();
+		$model = $this->getUser();
 		
-		$response = Request::factory('api/user/' . $model)->method(
-			Request::POST)
+		$response = Request::factory('api/user/' . $model)->method(Request::POST)
 			->execute();
 		
 		$this->assertEquals(200, $response->status());
@@ -72,11 +69,14 @@ class ApiTest extends Unittest_TestCase {
 
 	public function testDelete()
 	{
-		$model = $this->getModel();
+		$model = $this->getUser();
 		
-		$response = Request::factory('api/user/' . $model)->method(
-			Request::DELETE)
+		$response = Request::factory('api/user/' . $model)->method(Request::DELETE)
 			->execute();
+		
+		$model->reload();
+		
+		$this->assertFalse($model->loaded());
 		
 		$this->assertEquals(200, $response->status());
 	}

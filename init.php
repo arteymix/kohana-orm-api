@@ -2,7 +2,7 @@
 defined('SYSPATH') or die('No direct script access.');
 
 /**
- * Default route
+ * Route matching api calls.
  */
 Route::set('orm-api', 'api/<model>(/<id>(/<action>))', array(
         'model' => '.+', 
