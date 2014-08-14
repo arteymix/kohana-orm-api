@@ -1,6 +1,5 @@
-#kohana-orm-api
-
-## Synopsis
+kohana-orm-api
+===============
 
 This module provides an api for fetching and manipulating ORM models over a [RESTful web API](https://en.wikipedia.org/wiki/REST#RESTful_web_APIs). The four HTTP methods GET, POST, PUT and DELETE are used (respectively) to Find, Create, Update and Delete ORM models.
 
@@ -27,7 +26,7 @@ Implemented actions are
 
 count will return a JSON-encoded integer.
 
-### has, add and remove
+### ```has```, ```add``` and ```remove```
 
 A JSON object must be providen, containing
 
@@ -36,9 +35,9 @@ A JSON object must be providen, containing
         'far_keys': <far_keys>
     }
 
-add and remove will return an empty body with a 200 status code on success.
+```add``` and remove will return an empty body with a 200 status code on success.
 
-has will return a JSON-encoded boolean.
+```has``` will return a JSON-encoded boolean.
 
 ### check
 
@@ -48,40 +47,20 @@ check will return an empty body with a 200 status code on success. JSON-encoded 
 
 ## Configuration
 
-The only configuration required is a policy file that defines what calls are authorized on your models.
+The only configuration required is a policy file that defines what columns and alias are available depending on the called method.
 
-    return array(
+```php
+return array(
+    <policy> => array(
         <model> => array(
             <method> => array(
-                'exposed' => array(),  // columns exposed to manipulation (sorting, filtering, ...)
-                'expected' => array(), // columns exposed to modification
+                'column_1', 'alias_1'
             )
         )
-    );
+    )
+);
+```
 
-For example, if you want to expose registered usernames
-
-    return array(
-        'User' => array(
-            'find' => array(
-                'exposed' => array('username'),
-            )
-        )
-    );
-    
-Use an empty array to signify a complete negation and the NULL value to allow anything.
-
-    return array(
-        'User' => array(
-            'find' => array(
-                'exposed' => array() // no columns exposed
-                'expected' => NULL   // any value can be modified
-            )
-        )
-    );
-    
-If expected or exposed is not set, NULL will be defaulted.
-    
 ## Usage/Examples
 
 jQuery is well suited for the job when it comes to api-based website. You can create a nice app using its ajax implementation.
