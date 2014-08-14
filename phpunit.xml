@@ -1,4 +1,4 @@
-<phpunit bootstrap="../unittest/bootstrap.php" colors="true">
+<phpunit bootstrap="../unittest/bootstrap_all_modules.php" colors="true">
 	<php>
 		<server name="KOHANA_ENV" value="TESTING" />
 	</php>

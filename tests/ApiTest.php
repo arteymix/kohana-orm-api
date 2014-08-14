@@ -1,10 +1,13 @@
 <?php
+
 defined('SYSPATH') or die('No direct script access.');
 
 /**
  * Model used for tests
  */
-class Model_User extends Model_Auth_User {}
+class Model_User extends Model_Auth_User {
+	
+}
 
 /**
  * Tests
@@ -25,75 +28,105 @@ class ApiTest extends Unittest_TestCase {
 	 */
 	public function getUser()
 	{
-		return ORM::factory('User')->values(array('username' => 'test', 
-			'email' => 'test@example.com', 'password' => 'abcd1234'))
-			->create();
+		return ORM::factory('User')
+						->values(array(
+							'username' => 'test',
+							'email' => 'test@example.com',
+							'password' => 'abcd1234'))
+						->create();
 	}
 
 	public function testFind()
 	{
+		$user = $this->getUser();
+
+		$response = Request::factory('api/user/' . $user)
+				->method(Request::GET)
+				->execute();
+
+		$this->assertEquals(200, $response->status());
+	}
+
+	/**
+	 * This also test plural calls.
+	 */
+	public function testFindAll()
+	{
 		$model = $this->getUser();
-		
-		$response = Request::factory('api/user/' . $model)->method(Request::GET)
-			->execute();
-		
+
+		$response = Request::factory('api/users')
+				->method(Request::GET)
+				->execute();
+
 		$this->assertEquals(200, $response->status());
 	}
 
 	public function testCreate()
 	{
-		$response = Request::factory('api/user')->method(Request::PUT)
-			->execute();
-		
+		$response = Request::factory('api/user')
+				->method(Request::PUT)
+				->execute();
+
 		$this->assertEquals(200, $response->status());
+		$this->assertEquals('application/json', $response->headers('Content-Type'));
 	}
 
 	public function testCreateLoaded()
 	{
-		$response = Request::factory('api/user/123123')->method(Request::PUT)
-			->execute();
-		
+		$user = $this->getUser();
+		$response = Request::factory('api/user/' . $user)
+				->method(Request::PUT)
+				->execute();
+
 		$this->assertEquals(403, $response->status());
+		$this->assertEquals('application/json', $response->headers('Content-Type'));
 		$this->assertEquals('', json_decode($response->body()));
 	}
 
 	public function testUpdate()
 	{
 		$model = $this->getUser();
-		
-		$response = Request::factory('api/user/' . $model)->method(Request::POST)
-			->execute();
-		
+
+		$response = Request::factory('api/user/' . $model)
+				->method(Request::POST)
+				->execute();
+
 		$this->assertEquals(200, $response->status());
+		$this->assertEquals('application/json', $response->headers('Content-Type'));
 	}
 
 	public function testDelete()
 	{
 		$model = $this->getUser();
-		
-		$response = Request::factory('api/user/' . $model)->method(Request::DELETE)
-			->execute();
-		
+
+		$response = Request::factory('api/user/' . $model)
+				->method(Request::DELETE)
+				->execute();
+
 		$model->reload();
-		
+
 		$this->assertFalse($model->loaded());
-		
+
 		$this->assertEquals(200, $response->status());
+		$this->assertEquals('application/json', $response->headers('Content-Type'));
 	}
 
 	public function testDeleteUnloaded()
 	{
-		$response = Request::factory('api/user/123123')->method(Request::DELETE)
-			->execute();
-		
+		$response = Request::factory('api/user/123123')
+				->method(Request::DELETE)
+				->execute();
+
 		$this->assertEquals(403, $response->status());
+		$this->assertEquals('application/json', $response->headers('Content-Type'));
 		$this->assertEquals('', json_decode($response->body()));
 	}
 
 	public function tearDown()
 	{
 		DB::delete('users')->execute();
-		
+
 		parent::tearDown();
 	}
+
 }

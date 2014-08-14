@@ -1,4 +1,5 @@
 <?php
+
 defined('SYSPATH') or die('No direct script access.');
 
 /**
@@ -43,13 +44,13 @@ class Kohana_Controller_Api extends Controller {
 	 *
 	 * @var string
 	 */
-	public static $policy = 'default';
+	public static $default = 'default';
 
 	/**
 	 * Maps HTTP method to model's function.
 	 */
-	public static $methods = array(Request::GET => 'find', 
-		Request::POST => 'create', Request::PUT => 'update', 
+	public static $methods = array(Request::GET => 'find',
+		Request::POST => 'create', Request::PUT => 'update',
 		Request::DELETE => 'delete');
 
 	/**
@@ -82,46 +83,44 @@ class Kohana_Controller_Api extends Controller {
 	{
 		// Model might be plural or singular, so we singularize it.
 		$model = Inflector::singular($this->request->param('model'));
-		
-		if ( ! class_exists('Model_' . ucfirst($model)))
+
+		if (!class_exists('Model_' . ucfirst($model)))
 		{
 			throw new HTTP_Exception_404(':model not found.', array(
-				':model' => $model));
+		':model' => $model));
 		}
-		
+
 		// load the model
 		$this->model = ORM::factory($model, $this->request->param('id'));
-		
+
 		// check if we are dealing on multiple model
 		$this->singular = $this->request->param('model') === $model->object_name();
-		
+
 		// index capture the GET, PUT, POST and DELETE, otherwise its a specific
 		// model call like count_all or add.
 		$this->method = $this->request->action() === 'index' ? Controller_Api::$methods[$this->request->method()] : $this->request->action();
-		
+
 		// rename method for plural operation (eg. find_all, count_all)
 		if ($this->singular === FALSE)
 		{
 			$this->method .= '_all';
 		}
-		
+
 		// load the policy for this model
-		$this->policy = Kohana::$config->load('policy.' . Controller_Api::$policy . '.' . $this->model->object_name() . '.' . $this->method);
-		
+		$this->policy = Kohana::$config->load('policy.' . Controller_Api::$default . '.' . $this->model->object_name() . '.' . $this->method);
+
 		// ensure a policy is defined for the given method
 		if ($this->policy === NULL)
 		{
 			// throw a bad method
-			throw new HTTP_Exception_405(':model does not allow :method call through api.', array(
-				':model' => $model->object_name(), ':method' => $method));
+			throw new HTTP_Exception_405(':model does not allow :method call through api.', array(':model' => $model->object_name(), ':method' => $this->method));
 		}
-		
-		$exposed_functions = array('distinct', 'with', 'order_by', 'group_by', 
-			'limit', 'offset', 'where', 'and_where', 'or_where', 'having', 
+
+		$exposed_functions = array('distinct', 'with', 'order_by', 'group_by',
+			'limit', 'offset', 'where', 'and_where', 'or_where', 'having',
 			'and_having', 'or_having');
-		
+
 		// set the values in the POST
-		
 		// apply the query
 		foreach ($this->request->query() as $function => $case)
 		{
@@ -134,10 +133,10 @@ class Kohana_Controller_Api extends Controller {
 				}
 			}
 		}
-		
+
 		// set values from the Request body
 		$this->model->values(json_decode($this->request->body(), TRUE), $this->policy);
-		
+
 		// output is JSON unless specified otherwise
 		$this->response->headers('Content-Type', 'application/json');
 	}
@@ -147,42 +146,36 @@ class Kohana_Controller_Api extends Controller {
 		/**
 		 * Unloaded model must be found in order to call update or delete.
 		 */
-		if ( ! $this->model->loaded() and in_array($this->method, array(
-			'update', 'delete')))
+		if (!$this->model->loaded() and in_array($this->method, array('update', 'delete')))
 		{
 			$this->model->find();
 		}
-		
+
 		try
 		{
 			$result = array();
-			
+
 			if ($this->singular)
 			{
 				// set values based on expected values from policy
 				$this->model->values(json_decode($this->request->post()), $this->policy);
-				
+
 				// Make the api call
 				$this->model->{$this->method}();
-				
+
 				// filter result columns
 				$result = Arr::extract($this->model->as_array(), $this->policy);
 			}
 			else
 			{
 				// Make the plural api call
-				$this->model->{$method . '_all'}();
-				
-				foreach ($this->model->{$method}() as $model)
+				foreach ($this->model->{$method . '_all'}() as $model)
 				{
-					// Filter result columns
-					foreach ($columns as $column)
-					{
-						$result[][$column] = $this->model->{$column};
-					}
+					// filter result columns
+					$result[] = Arr::extract($this->model->as_array(), $this->policy);
 				}
 			}
-			
+
 			$this->response->body(json_encode($result, JSON_UNESCAPED_UNICODE));
 		}
 		catch (ORM_Validation_Exception $ove)
@@ -190,8 +183,9 @@ class Kohana_Controller_Api extends Controller {
 			/**
 			 * Dump the error in json.
 			 */
-			$this->response->body(json_encode($ove->errors('model'), JSON_UNESCAPED_UNICODE))
-				->status(401);
+			$this->response
+					->body(json_encode($ove->errors('model'), JSON_UNESCAPED_UNICODE))
+					->status(401);
 		}
 	}
 
@@ -216,15 +210,15 @@ class Kohana_Controller_Api extends Controller {
 	public function action_add()
 	{
 		$add = json_decode($this->request->body());
-		
+
 		$validation = Validation::factory($add)->rule('alias', 'not_empty')
-			->rule('alias', 'in_array', array(':value', $this->policy));
-		
-		if ( ! $validation->check())
+				->rule('alias', 'in_array', array(':value', $this->policy));
+
+		if (!$validation->check())
 		{
 			throw new HTTP_Exception_403('alias and far_keys must be specified.');
 		}
-		
+
 		$this->model->add($add['alias'], Arr::get($add, 'far_keys'));
 	}
 
@@ -239,15 +233,15 @@ class Kohana_Controller_Api extends Controller {
 	public function action_remove()
 	{
 		$remove = json_decode($this->request->body());
-		
+
 		$validation = Validation::factory($remove)->rule('alias', 'not_empty')
-			->rule('alias', 'in_array', array(':value', $this->policy));
-		
-		if ( ! $validation->check())
+				->rule('alias', 'in_array', array(':value', $this->policy));
+
+		if (!$validation->check())
 		{
 			throw new HTTP_Exception_403('alias and far_keys must be specified.');
 		}
-		
+
 		$this->model->remove($remove['alias'], Arr::get($remove, 'far_keys'));
 	}
 
@@ -262,15 +256,16 @@ class Kohana_Controller_Api extends Controller {
 	public function action_has()
 	{
 		$has = json_decode($this->request->body());
-		
-		$validation = Validation::factory($has)->rule('alias', 'not_empty')
-			->rule('alias', 'in_array', array(':value', $this->policy));
-		
-		if ( ! $validation->check())
+
+		$validation = Validation::factory($has)
+				->rule('alias', 'not_empty')
+				->rule('alias', 'in_array', array(':value', $this->policy));
+
+		if (!$validation->check())
 		{
 			throw new HTTP_Exception_403('alias and far_keys must be specified.');
 		}
-		
+
 		$this->response->body(json_encode($this->model->has($has['alias'], Arr::get($has, 'far_keys')), JSON_UNESCAPED_UNICODE));
 	}
 
@@ -284,13 +279,15 @@ class Kohana_Controller_Api extends Controller {
 		try
 		{
 			$this->model->check();
-			
-			$this->body(json_encode(TRUE));
+
+			$this->response->body(json_encode(TRUE));
 		}
 		catch (ORM_Validation_Exception $ove)
 		{
-			$this->body(json_encode($ove->errors('model'), JSON_UNESCAPED_UNICODE))
-				->status(403);
+			$this->response
+					->body(json_encode($ove->errors('model'), JSON_UNESCAPED_UNICODE))
+					->status(403);
 		}
 	}
+
 }
