@@ -57,10 +57,10 @@ count will return a JSON-encoded integer.
 A JSON object must be providen, containing
 
 ```json
-    {
-        'alias': <alias>,
-        'far_keys': <far_keys>
-    }
+{
+    'alias': <alias>,
+    'far_keys': <far_keys>
+}
 ```
 
 add and remove will return an empty body with a 200 status code on success.
@@ -88,34 +88,3 @@ return array(
     )
 );
 ```
-
-## Usage/Examples
-
-jQuery is well suited for the job when it comes to api-based website. You can create a nice app using its ajax implementation.
-
-Note : since doing cross-browser compatible AJAX is an horrible task to do and since nobody does that anymore, we'll just assume in the following examples that you are using jQuery. It's a free (as in freedom) library that simplifies AJAX requests, along with every other thing raw javascript does and there is no excuse not to use it.
-
-> You are going to put jQuery on your website, and that's final, young sir !
-
-All complaints about that fact should be sent directly to /dev/null.
-
-
-## Security
-
-As the GNU licences say so well :
-
-> This software is distributed in the hope that it will be useful,
-> but WITHOUT ANY WARRANTY; without even the implied warranty of
-> MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-This is an api that exposes your model in a generic manner, so do not take security concers with a grain of salt.
-
-In a few words, we believe that this module is safe to use (when correctly configured), due to the simplicity of it's code, but be aware that we are humans and mistakes can always happen. Still, since this is a free project, you can always double-check the code yourself (or pay a developer to do it).
-
-## License
-
-Not decided yet. Comming soon :)
-
-## In Conclusion
-
-> And if you don't like the way we code, you can go fork yourself !
