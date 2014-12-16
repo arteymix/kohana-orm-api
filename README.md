@@ -64,7 +64,7 @@ This is handy if you wish to alter the output of a plural call.
 Count models
 ------------
 ```
-/api/<models>/count
+GET /api/<models>/count
 ```
 Count will count the number of entries matching the query.
 count will return a JSON-encoded integer.
@@ -72,9 +72,9 @@ count will return a JSON-encoded integer.
 Relationships (has, add and remove)
 -------------------
 ```
-/api/<model>/<id>/has
-/api/<model>/<id>/add
-/api/<model>/<id>/remove
+GET /api/<model>/<id>/has
+GET /api/<model>/<id>/add
+GET /api/<model>/<id>/remove
 ```
 A JSON object must be providen in the request body, containing
 ```json
